@@ -1,0 +1,31 @@
+{
+  "name": "ui-debug-kit",
+  "description": "Various tools for debugging the layout and rendering of React component trees.",
+  "version": "0.0.1",
+  "author": "Venryx (https://venryx.com)",
+  "main": "Dist/index.js",
+  "typings": "Dist/index.d.ts",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Venryx/ui-debug-kit.git"
+  },
+  "keywords": [
+    "graph"
+  ],
+  "scripts": {
+    "dev": "tsc --watch",
+    "dist": "tsc"
+  },
+  "peerDependencies": {
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
+  },
+  "devDependencies": {
+    "@types/react": "^17.0.9",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
+  },
+  "dependencies": {}
+}

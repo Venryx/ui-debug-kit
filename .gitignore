@@ -1,0 +1,5 @@
+Examples/**/WebpackOut
+Examples/**/Dist
+
+node_modules
+.DS_Store
