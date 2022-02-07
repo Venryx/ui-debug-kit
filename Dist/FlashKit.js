@@ -1,5 +1,5 @@
 import ReactDOM from "react-dom";
-import { GetHashForString_cyrb53, RNG_Mulberry32 } from "./Utils/PRNG";
+import { GetHashForString_cyrb53, RNG_Mulberry32 } from "./Utils/PRNG.js";
 function FindDOM(comp) {
     if (comp == null)
         return null;

@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import {n, RequiredBy} from "./Utils/@Internal/Types.js";
-import {GetHashForString_cyrb53, RNG_Mulberry32} from "./Utils/PRNG";
+import {GetHashForString_cyrb53, RNG_Mulberry32} from "./Utils/PRNG.js";
 
 function FindDOM(comp: React.Component|n) {
 	if (comp == null) return null;
