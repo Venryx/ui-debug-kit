@@ -4,6 +4,7 @@ export declare class FlashElementOptions {
     el: HTMLElement;
     color: string;
     text: string;
+    fontSize: number;
     duration: number;
     thickness: number;
 }

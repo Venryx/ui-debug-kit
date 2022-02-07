@@ -9,6 +9,7 @@ export class FlashElementOptions {
     constructor() {
         this.color = "red";
         this.text = "";
+        this.fontSize = 13;
         this.duration = 3;
         this.thickness = 5;
     }
@@ -32,6 +33,7 @@ export function FlashElement(options) {
 			content: ${JSON.stringify(opt.text)};
 			color: ${opt.color};
 			font-weight: bold;
+			font-size: ${opt.fontSize}px;
 		}
 	`;
     let timeoutID; // eslint-disable-line

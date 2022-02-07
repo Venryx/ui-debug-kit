@@ -12,6 +12,7 @@ export class FlashElementOptions {
 	el: HTMLElement;
 	color = "red";
 	text = "";
+	fontSize = 13;
 	duration = 3;
 	thickness = 5;
 }
@@ -36,6 +37,7 @@ export function FlashElement(options: RequiredBy<Partial<FlashElementOptions>, "
 			content: ${JSON.stringify(opt.text)};
 			color: ${opt.color};
 			font-weight: bold;
+			font-size: ${opt.fontSize}px;
 		}
 	`;
 
