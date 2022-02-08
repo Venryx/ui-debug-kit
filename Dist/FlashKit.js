@@ -15,6 +15,8 @@ export class FlashElementOptions {
         this.waitForPriorFlashes = true;
     }
 }
+// parent project can set defaults for the values here (applied in FlashElement() func)
+FlashElementOptions.defaults = {};
 const tempElHolder = document.getElementById("hidden_early");
 export const elementFlashQueues = new WeakMap();
 globalThis.elementFlashQueues = elementFlashQueues;
@@ -87,7 +89,9 @@ export class FlashEntry {
     }
 }
 export async function FlashElement(options) {
-    const opt = Object.assign(new FlashElementOptions(), options);
+    const opt = Object.assign(new FlashElementOptions(), FlashElementOptions.defaults, options);
+    if (FlashElementOptions.finalize != null)
+        FlashElementOptions.finalize(opt);
     const queue = GetFlashQueueFor(options.el);
     const entry = new FlashEntry({
         queue, opt,

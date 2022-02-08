@@ -1,6 +1,8 @@
 import React from "react";
 import { RequiredBy } from "./Utils/@Internal/Types.js";
 export declare class FlashElementOptions {
+    static defaults: Partial<FlashElementOptions>;
+    static finalize: (opts: FlashElementOptions) => any;
     el: HTMLElement;
     color: string;
     text: string;

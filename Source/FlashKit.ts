@@ -9,6 +9,10 @@ function FindDOM(comp: React.Component|n) {
 }
 
 export class FlashElementOptions {
+	// parent project can set defaults for the values here (applied in FlashElement() func)
+	static defaults: Partial<FlashElementOptions> = {};
+	static finalize: (opts: FlashElementOptions)=>any;
+
 	el: HTMLElement;
 	color = "red";
 	text = "";
@@ -107,7 +111,8 @@ export class FlashEntry {
 }
 
 export async function FlashElement(options: RequiredBy<Partial<FlashElementOptions>, "el">) {
-	const opt = Object.assign(new FlashElementOptions(), options);
+	const opt = Object.assign(new FlashElementOptions(), FlashElementOptions.defaults, options);
+	if (FlashElementOptions.finalize != null) FlashElementOptions.finalize(opt);
 	const queue = GetFlashQueueFor(options.el);
 	const entry = new FlashEntry({
 		queue, opt,
