@@ -8,23 +8,45 @@ function FindDOM(comp: React.Component|n) {
 	return ReactDOM.findDOMNode(comp) as Element;
 }
 
-export class FlashElementOptions {
+export class FlashOptions {
 	// parent project can set defaults for the values here (applied in FlashElement() func)
-	static defaults: Partial<FlashElementOptions> = {};
-	static finalize: (opts: FlashElementOptions)=>any;
+	static defaults: Partial<FlashOptions> = {};
+	static finalizers = [] as Array<(opts: FlashOptions)=>any>;
+	/** Useful for chaining in console. Example: FlashKit.FlashOptions.AddFinalizer_TextMustContain("...").ClearEarlier() */
+	static finalizerChainHelpers = {
+		ClearEarlier: ()=>{
+			FlashOptions.finalizers.splice(0, FlashOptions.finalizers.length - 1);
+			return FlashOptions.finalizerChainHelpers;
+		},
+	}
+	static AddFinalizer_TextMustContain(textToContain: string) {
+		FlashOptions.finalizers.push(opts=>{
+			if (!opts.text.includes(textToContain)) {
+				opts.enabled = false;
+			}
+		});
+		return FlashOptions.finalizerChainHelpers;
+	}
 
+	enabled = true;
 	el: HTMLElement;
 	color = "red";
+	duration = 3;
+	waitForPriorFlashes = true;
+
+	// outline
+	outlineEnabled = true;
+	thickness = 5;
+
+	// text
+	textEnabled = true;
+	background = "rgba(0,0,0,.7)";
 	text = "";
 	fontSize = 13;
-	duration = 3;
-	thickness = 5;
-	waitForPriorFlashes = true;
 }
 const tempElHolder = document.getElementById("hidden_early");
 
 export const elementFlashQueues = new WeakMap<Element, FlashQueue>();
-globalThis.elementFlashQueues = elementFlashQueues;
 export function GetFlashQueueFor(el: Element) {
 	if (!elementFlashQueues.has(el)) elementFlashQueues.set(el, new FlashQueue());
 	return elementFlashQueues.get(el)!;
@@ -49,7 +71,7 @@ export class FlashEntry {
 		Object.assign(this, data);
 	}
 	queue: FlashQueue;
-	opt: FlashElementOptions;
+	opt: FlashOptions;
 	idAsClass: string;
 	indexInSequence: number;
 
@@ -58,27 +80,31 @@ export class FlashEntry {
 	get WasShown() { return this.timeoutID != null; }
 	Show() {
 		this.queue.lastShown_index = this.queue.queue.indexOf(this);
-		this.opt.el.classList.add(this.idAsClass);
-		this.opt.el.style.outline = `${this.opt.thickness}px solid ${this.opt.color}`;
+		if (this.opt.outlineEnabled) {
+			this.opt.el.style.outline = `${this.opt.thickness}px solid ${this.opt.color}`;
+		}
 	
-		const indexInSequence_str = this.indexInSequence == 0 ? "" : `[+${this.indexInSequence}] `;
+		if (this.opt.textEnabled) {
+			this.opt.el.classList.add(this.idAsClass);
+			const indexInSequence_str = this.indexInSequence == 0 ? "" : `[+${this.indexInSequence}] `;
 
-		this.styleForTextPseudoEl = document.createElement("style");
-		tempElHolder?.appendChild(this.styleForTextPseudoEl);
-		this.styleForTextPseudoEl.innerHTML = `
-			.${this.idAsClass}:before {
-				position: absolute;
-				left: 0;
-				bottom: 0;
-				z-index: 100;
-				padding: 3px 5px;
-				background: rgba(0,0,0,.7);
-				content: ${JSON.stringify(indexInSequence_str + this.opt.text)};
-				color: ${this.opt.color};
-				font-weight: bold;
-				font-size: ${this.opt.fontSize}px;
+			this.styleForTextPseudoEl = document.createElement("style");
+			tempElHolder?.appendChild(this.styleForTextPseudoEl);
+			this.styleForTextPseudoEl.innerHTML = `
+				.${this.idAsClass}:before {
+					position: absolute;
+					left: 0;
+					bottom: 0;
+					z-index: 100;
+					padding: 3px 5px;
+					background: ${this.opt.background};
+					content: ${JSON.stringify(indexInSequence_str + this.opt.text)};
+					color: ${this.opt.color};
+					font-weight: bold;
+					font-size: ${this.opt.fontSize}px;
+				}
+			`;
 			}
-		`;
 
 		//await new Promise(resolve=>setTimeout(resolve, this.opt.duration == -1 ? 100_000_000_000 : this.opt.duration * 1000));
 		this.timeoutID = setTimeout(()=>{
@@ -108,9 +134,13 @@ export class FlashEntry {
 	}
 }
 
-export async function FlashElement(options: RequiredBy<Partial<FlashElementOptions>, "el">) {
-	const opt = Object.assign(new FlashElementOptions(), FlashElementOptions.defaults, options);
-	if (FlashElementOptions.finalize != null) FlashElementOptions.finalize(opt);
+export async function FlashElement(options: RequiredBy<Partial<FlashOptions>, "el">) {
+	const opt = Object.assign(new FlashOptions(), FlashOptions.defaults, options);
+	for (const finalizer of FlashOptions.finalizers) {
+		finalizer(opt);
+	}
+	if (!opt.enabled) return;
+
 	const queue = GetFlashQueueFor(options.el);
 	const entry = new FlashEntry({
 		queue, opt,
@@ -132,7 +162,7 @@ export async function FlashElement(options: RequiredBy<Partial<FlashElementOptio
 
 	entry.Show();
 }
-export function FlashComp(comp: React.Component | HTMLElement | null | undefined, options?: Partial<FlashElementOptions> & {wait?: number}) {
+export function FlashComp(comp: React.Component | HTMLElement | null | undefined, options?: Partial<FlashOptions> & {wait?: number}) {
 	if (comp == null) return;
 	const compName = comp instanceof HTMLElement ? comp.className.split(/\s+/).filter(a=>!a.startsWith("flash_")).join(" ") : comp.constructor.name;
 	const customizations = flashCustomizationsByComp.get(compName) ?? new FlashCustomizations();
@@ -165,8 +195,21 @@ export class FlashCustomizations {
 	SetEnabled(enabled: boolean | 1 | 0) { this.enabled = !!enabled; }
 	SetDurationOverride(duration: number | -1 | undefined) { this.durationOverride = duration; }
 }
-globalThis["GetFlashCustomizationsForComp"] = GetFlashCustomizationsForComp;
 export function GetFlashCustomizationsForComp(compName: string) {
 	if (!flashCustomizationsByComp.has(compName)) flashCustomizationsByComp.set(compName, new FlashCustomizations());
 	return flashCustomizationsByComp.get(compName)!;
 }
+
+// helpers for use in dev-tools (should include all exports)
+globalThis.FlashKit = {
+	FlashOptions,
+	elementFlashQueues,
+	GetFlashQueueFor,
+	FlashQueue,
+	FlashEntry,
+	FlashElement,
+	FlashComp,
+	flashCustomizationsByComp,
+	FlashCustomizations,
+	GetFlashCustomizationsForComp,
+};
