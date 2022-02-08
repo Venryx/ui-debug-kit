@@ -7,8 +7,35 @@ export declare class FlashElementOptions {
     fontSize: number;
     duration: number;
     thickness: number;
+    waitForPriorFlashes: boolean;
 }
-export declare function FlashElement(options: RequiredBy<Partial<FlashElementOptions>, "el">): void;
+export declare const elementFlashQueues: WeakMap<Element, FlashQueue>;
+export declare function GetFlashQueueFor(el: Element): FlashQueue;
+export declare class FlashQueue {
+    queue: FlashEntry[];
+    lastShown_index: number;
+    get LatestEntry(): FlashEntry;
+    get LastShown(): FlashEntry;
+    get CurrentlyVisibleEntry(): FlashEntry | null;
+    get EntriesToStillStart(): FlashEntry[];
+    lastSequenceStarter_index: number;
+}
+export declare class FlashEntry {
+    constructor(data: RequiredBy<Partial<FlashEntry>, "queue" | "opt" | "indexInSequence">);
+    queue: FlashQueue;
+    opt: FlashElementOptions;
+    idAsClass: string;
+    indexInSequence: number;
+    styleForTextPseudoEl: HTMLStyleElement;
+    timeoutID: number;
+    Show(): Promise<void>;
+    ClearEffects(): void;
+    completed: boolean;
+    completionPromise: Promise<void>;
+    completionPromise_resolve: () => void;
+    CompleteNow(): void;
+}
+export declare function FlashElement(options: RequiredBy<Partial<FlashElementOptions>, "el">): Promise<void>;
 export declare function FlashComp(comp: React.Component | HTMLElement | null | undefined, options?: Partial<FlashElementOptions> & {
     wait?: number;
 }): void;
