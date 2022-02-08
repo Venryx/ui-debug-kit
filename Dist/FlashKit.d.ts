@@ -30,6 +30,7 @@ export declare class FlashEntry {
     indexInSequence: number;
     styleForTextPseudoEl: HTMLStyleElement;
     timeoutID: number;
+    get WasShown(): boolean;
     Show(): Promise<void>;
     ClearEffects(): void;
     completed: boolean;

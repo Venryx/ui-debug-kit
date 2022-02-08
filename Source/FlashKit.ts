@@ -55,6 +55,7 @@ export class FlashEntry {
 
 	styleForTextPseudoEl: HTMLStyleElement;
 	timeoutID: number;
+	get WasShown() { return this.timeoutID != null; }
 	Show() {
 		this.queue.lastShown_index = this.queue.queue.indexOf(this);
 		this.opt.el.classList.add(this.idAsClass);
@@ -80,7 +81,7 @@ export class FlashEntry {
 		`;
 
 		//await new Promise(resolve=>setTimeout(resolve, this.opt.duration == -1 ? 100_000_000_000 : this.opt.duration * 1000));
-		setTimeout(()=>{
+		this.timeoutID = setTimeout(()=>{
 			this.CompleteNow();
 		}, this.opt.duration == -1 ? 100_000_000_000 : this.opt.duration * 1000);
 
@@ -90,20 +91,17 @@ export class FlashEntry {
 		// clear UI changes made
 		this.opt.el.classList.remove(this.idAsClass);
 		this.opt.el.style.outline = "none";
-		this.styleForTextPseudoEl.remove();
+		if (this.styleForTextPseudoEl) this.styleForTextPseudoEl.remove();
 	}
 
 	completed = false;
-	//completionBecameEndOfSequence = false;
 	completionPromise: Promise<void>;
 	completionPromise_resolve: ()=>void;
 	CompleteNow() {
-		clearTimeout(this.timeoutID);
-		this.ClearEffects();
-
-		/*if (completedNaturally && this.queue.EntriesToStillStart.length == 0) {
-			this.completionBecameEndOfSequence = true;
-		}*/
+		if (this.WasShown) {
+			clearTimeout(this.timeoutID);
+			this.ClearEffects();
+		}
 
 		this.completed = true;
 		this.completionPromise_resolve();
