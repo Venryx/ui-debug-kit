@@ -1,54 +1,6 @@
 import React from "react";
+import { FlashOptions } from "./FlashKit/FlashEntry.js";
 import { RequiredBy } from "./Utils/@Internal/Types.js";
-export declare class FlashOptions {
-    static defaults: Partial<FlashOptions>;
-    static finalizers: ((opts: FlashOptions) => any)[];
-    /** Useful for chaining in console. Example: FlashKit.FlashOptions.AddFinalizer_TextMustContain("...").ClearEarlier() */
-    static finalizerChainHelpers: {
-        ClearEarlier: () => any;
-    };
-    static AddFinalizer_TextMustContain(textToContain: string): {
-        ClearEarlier: () => any;
-    };
-    enabled: boolean;
-    el: HTMLElement;
-    color: string;
-    duration: number;
-    waitForPriorFlashes: boolean;
-    outlineEnabled: boolean;
-    thickness: number;
-    textEnabled: boolean;
-    background: string;
-    text: string;
-    fontSize: number;
-}
-export declare const elementFlashQueues: WeakMap<Element, FlashQueue>;
-export declare function GetFlashQueueFor(el: Element): FlashQueue;
-export declare class FlashQueue {
-    queue: FlashEntry[];
-    lastShown_index: number;
-    get LatestEntry(): FlashEntry;
-    get LastShown(): FlashEntry;
-    get CurrentlyVisibleEntry(): FlashEntry | null;
-    get EntriesToStillStart(): FlashEntry[];
-    lastSequenceStarter_index: number;
-}
-export declare class FlashEntry {
-    constructor(data: RequiredBy<Partial<FlashEntry>, "queue" | "opt" | "indexInSequence">);
-    queue: FlashQueue;
-    opt: FlashOptions;
-    idAsClass: string;
-    indexInSequence: number;
-    styleForTextPseudoEl: HTMLStyleElement;
-    timeoutID: number;
-    get WasShown(): boolean;
-    Show(): Promise<void>;
-    ClearEffects(): void;
-    completed: boolean;
-    completionPromise: Promise<void>;
-    completionPromise_resolve: () => void;
-    CompleteNow(): void;
-}
 export declare function FlashElement(options: RequiredBy<Partial<FlashOptions>, "el">): Promise<void>;
 export declare function FlashComp(comp: React.Component | HTMLElement | null | undefined, options?: Partial<FlashOptions> & {
     wait?: number;
