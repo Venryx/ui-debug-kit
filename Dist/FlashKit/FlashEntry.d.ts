@@ -32,6 +32,7 @@ export declare class FlashOptions {
     background: string;
     text: string;
     fontSize: number;
+    pseudoEl_extraStyles?: string;
 }
 export declare const elementFlashQueues: WeakMap<Element, FlashQueue>;
 export declare function GetFlashQueueFor(el: Element): FlashQueue;
@@ -48,6 +49,7 @@ export declare class FlashEntry {
     fade_timeoutID: number;
     Render(faded?: boolean): void;
     Show(): Promise<void>;
+    ClearTimeouts(): void;
     ClearEffects(): void;
     completed: boolean;
     completionPromise: Promise<void>;

@@ -63,12 +63,13 @@ export const MAX_TIMEOUT_DURATION = 100000000000;
 export class FlashEntry {
     constructor(data) {
         this.completed = false;
-        this.idAsClass = `flash_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+        this.idAsClass = `flash_${Date.now()}_${Math.floor(Math.random() * 1000000)}`;
         this.completionPromise = new Promise(resolve => this.completionPromise_resolve = resolve);
         Object.assign(this, data);
     }
     get WasShown() { return this.complete_timeoutID != null; }
     Render(faded = false) {
+        var _a;
         const opts = { ...this.opt };
         if (faded) {
             Object.assign(opts, this.opt.fadeOverrides);
@@ -101,6 +102,7 @@ export class FlashEntry {
 					color: ${opts.color};
 					font-weight: bold;
 					font-size: ${opts.fontSize}px;
+					${(_a = opts.pseudoEl_extraStyles) !== null && _a !== void 0 ? _a : ""}
 				}
 			`;
         }
@@ -108,6 +110,8 @@ export class FlashEntry {
     Show() {
         this.queue.lastShown_index = this.queue.queue.indexOf(this);
         this.Render();
+        // make sure we don't have a previous timeout still running (can happen in debug-mode)
+        this.ClearTimeouts();
         //await new Promise(resolve=>setTimeout(resolve, this.opt.duration == -1 ? 100_000_000_000 : this.opt.duration * 1000));
         this.complete_timeoutID = setTimeout(() => {
             this.CompleteNow();
@@ -119,6 +123,10 @@ export class FlashEntry {
         }
         return this.completionPromise;
     }
+    ClearTimeouts() {
+        clearTimeout(this.complete_timeoutID);
+        clearTimeout(this.fade_timeoutID);
+    }
     ClearEffects() {
         // clear UI changes made
         this.opt.el.classList.remove(this.idAsClass);
@@ -128,8 +136,7 @@ export class FlashEntry {
     }
     CompleteNow() {
         if (this.WasShown) {
-            clearTimeout(this.complete_timeoutID);
-            clearTimeout(this.fade_timeoutID);
+            this.ClearTimeouts();
             this.ClearEffects();
         }
         this.completed = true;

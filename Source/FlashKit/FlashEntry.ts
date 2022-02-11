@@ -61,6 +61,7 @@ export class FlashOptions {
 	background = "rgba(0,0,0,.7)";
 	text = "";
 	fontSize = 13;
+	pseudoEl_extraStyles?: string;
 }
 const tempElHolder = document.getElementById("hidden_early");
 
@@ -74,7 +75,7 @@ export const MAX_TIMEOUT_DURATION = 100_000_000_000;
 
 export class FlashEntry {
 	constructor(data: RequiredBy<Partial<FlashEntry>, "queue" | "opt" | "indexInSequence">) {
-		this.idAsClass = `flash_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+		this.idAsClass = `flash_${Date.now()}_${Math.floor(Math.random() * 1000000)}`;
 		this.completionPromise = new Promise(resolve=>this.completionPromise_resolve = resolve);
 		Object.assign(this, data);
 	}
@@ -124,6 +125,7 @@ export class FlashEntry {
 					color: ${opts.color};
 					font-weight: bold;
 					font-size: ${opts.fontSize}px;
+					${opts.pseudoEl_extraStyles ?? ""}
 				}
 			`;
 		}
@@ -132,6 +134,9 @@ export class FlashEntry {
 		this.queue.lastShown_index = this.queue.queue.indexOf(this);
 		
 		this.Render();
+
+		// make sure we don't have a previous timeout still running (can happen in debug-mode)
+		this.ClearTimeouts();
 
 		//await new Promise(resolve=>setTimeout(resolve, this.opt.duration == -1 ? 100_000_000_000 : this.opt.duration * 1000));
 		this.complete_timeoutID = setTimeout(()=>{
@@ -146,6 +151,10 @@ export class FlashEntry {
 
 		return this.completionPromise;
 	}
+	ClearTimeouts() {
+		clearTimeout(this.complete_timeoutID);
+		clearTimeout(this.fade_timeoutID);
+	}
 	ClearEffects() {
 		// clear UI changes made
 		this.opt.el.classList.remove(this.idAsClass);
@@ -158,8 +167,7 @@ export class FlashEntry {
 	completionPromise_resolve: ()=>void;
 	CompleteNow() {
 		if (this.WasShown) {
-			clearTimeout(this.complete_timeoutID);
-			clearTimeout(this.fade_timeoutID);
+			this.ClearTimeouts();
 			this.ClearEffects();
 		}
 
