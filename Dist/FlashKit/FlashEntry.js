@@ -1,4 +1,4 @@
-import { FlashQueue } from "./FlashQueue.js";
+import { debugModeEnabled, FlashQueue } from "./FlashQueue.js";
 export class FinalizerEntry {
     constructor(data) {
         this.tags = [];
@@ -12,6 +12,7 @@ export class FlashOptions {
         this.color = "red";
         this.duration = 3;
         this.waitForPriorFlashes = true;
+        this.recordStackTrace = false;
         // outline
         this.outlineEnabled = true;
         this.thickness = 5;
@@ -66,6 +67,9 @@ export class FlashEntry {
         this.idAsClass = `flash_${Date.now()}_${Math.floor(Math.random() * 1000000)}`;
         this.completionPromise = new Promise(resolve => this.completionPromise_resolve = resolve);
         Object.assign(this, data);
+        if (this.opt.recordStackTrace) {
+            this.stackTraceErr = new Error();
+        }
     }
     get WasShown() { return this.complete_timeoutID != null; }
     Render(faded = false) {
@@ -85,7 +89,7 @@ export class FlashEntry {
                 }
             }
             opts.el.classList.add(this.idAsClass);
-            const indexInSequence_str = this.indexInSequence == 0 ? "" : `[+${this.indexInSequence}] `;
+            const indexInSequence_str = this.indexInSequence == 0 || debugModeEnabled ? "" : `[+${this.indexInSequence}] `;
             if (this.styleForTextPseudoEl == null)
                 this.styleForTextPseudoEl = document.createElement("style");
             if (!document.contains(this.styleForTextPseudoEl))
@@ -110,8 +114,6 @@ export class FlashEntry {
     Show() {
         this.queue.lastShown_index = this.queue.queue.indexOf(this);
         this.Render();
-        // make sure we don't have a previous timeout still running (can happen in debug-mode)
-        this.ClearTimeouts();
         //await new Promise(resolve=>setTimeout(resolve, this.opt.duration == -1 ? 100_000_000_000 : this.opt.duration * 1000));
         this.complete_timeoutID = setTimeout(() => {
             this.CompleteNow();

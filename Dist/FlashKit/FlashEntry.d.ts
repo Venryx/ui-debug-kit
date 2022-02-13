@@ -24,6 +24,7 @@ export declare class FlashOptions {
     color: string;
     duration: number;
     waitForPriorFlashes: boolean;
+    recordStackTrace: boolean;
     fadeOverrides?: Partial<FlashOptions>;
     fadeDuration?: number;
     outlineEnabled: boolean;
@@ -43,6 +44,7 @@ export declare class FlashEntry {
     opt: FlashOptions;
     idAsClass: string;
     indexInSequence: number;
+    stackTraceErr?: Error;
     styleForTextPseudoEl: HTMLStyleElement;
     complete_timeoutID: number;
     get WasShown(): boolean;

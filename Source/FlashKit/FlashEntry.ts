@@ -1,5 +1,5 @@
 import {RequiredBy} from "../Utils/@Internal/Types.js";
-import {FlashQueue} from "./FlashQueue.js";
+import {debugModeEnabled, FlashQueue} from "./FlashQueue.js";
 
 export class FinalizerEntry {
 	constructor(data: RequiredBy<Partial<FinalizerEntry>, "func">) {
@@ -47,6 +47,7 @@ export class FlashOptions {
 	color = "red";
 	duration = 3;
 	waitForPriorFlashes = true;
+	recordStackTrace = false;
 
 	// fade overrides
 	fadeOverrides?: Partial<FlashOptions>;
@@ -78,11 +79,16 @@ export class FlashEntry {
 		this.idAsClass = `flash_${Date.now()}_${Math.floor(Math.random() * 1000000)}`;
 		this.completionPromise = new Promise(resolve=>this.completionPromise_resolve = resolve);
 		Object.assign(this, data);
+		if (this.opt.recordStackTrace) {
+			this.stackTraceErr = new Error();
+		}
 	}
 	queue: FlashQueue;
 	opt: FlashOptions;
 	idAsClass: string;
 	indexInSequence: number;
+	//stackTrace?: string;
+	stackTraceErr?: Error;
 
 	styleForTextPseudoEl: HTMLStyleElement;
 	complete_timeoutID: number;
@@ -109,7 +115,7 @@ export class FlashEntry {
 			}
 			opts.el.classList.add(this.idAsClass);
 			
-			const indexInSequence_str = this.indexInSequence == 0 ? "" : `[+${this.indexInSequence}] `;
+			const indexInSequence_str = this.indexInSequence == 0 || debugModeEnabled ? "" : `[+${this.indexInSequence}] `;
 
 			if (this.styleForTextPseudoEl == null) this.styleForTextPseudoEl = document.createElement("style");
 			if (!document.contains(this.styleForTextPseudoEl)) tempElHolder?.appendChild(this.styleForTextPseudoEl);
@@ -134,9 +140,6 @@ export class FlashEntry {
 		this.queue.lastShown_index = this.queue.queue.indexOf(this);
 		
 		this.Render();
-
-		// make sure we don't have a previous timeout still running (can happen in debug-mode)
-		this.ClearTimeouts();
 
 		//await new Promise(resolve=>setTimeout(resolve, this.opt.duration == -1 ? 100_000_000_000 : this.opt.duration * 1000));
 		this.complete_timeoutID = setTimeout(()=>{
