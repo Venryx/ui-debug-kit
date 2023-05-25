@@ -72,7 +72,8 @@ export function GetFlashQueueFor(el: Element) {
 	return elementFlashQueues.get(el)!;
 }
 
-export const MAX_TIMEOUT_DURATION = 100_000_000_000;
+//export const MAX_TIMEOUT_DURATION = 100_000_000_000; // edit: why did I think this was valid before?
+export const MAX_TIMEOUT_DURATION = 2_147_483_647; // max safe value for setTimeout, according to: https://stackoverflow.com/a/12351592
 
 export class FlashEntry {
 	constructor(data: RequiredBy<Partial<FlashEntry>, "queue" | "opt" | "indexInSequence">) {

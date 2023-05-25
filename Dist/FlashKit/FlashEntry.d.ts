@@ -37,7 +37,7 @@ export declare class FlashOptions {
 }
 export declare const elementFlashQueues: WeakMap<Element, FlashQueue>;
 export declare function GetFlashQueueFor(el: Element): FlashQueue;
-export declare const MAX_TIMEOUT_DURATION = 100000000000;
+export declare const MAX_TIMEOUT_DURATION = 2147483647;
 export declare class FlashEntry {
     constructor(data: RequiredBy<Partial<FlashEntry>, "queue" | "opt" | "indexInSequence">);
     queue: FlashQueue;
